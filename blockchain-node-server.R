@@ -61,11 +61,10 @@ function(req)
     render.html <- paste0(render.html, '<br>')
     if (length(blockchain$chain[i]$block$transactions) > 0 ) {
       for (j in 1:length(blockchain$chain[i]$block$transactions)) {
-        render.html <- paste0(render.html, blockchain$chain[i]$block$transactions[[j]])
+        render.html <- paste0(render.html, blockchain$chain[i]$block$transactions[j])
         render.html <- paste0(render.html, '<br>')
       }
     }
-    render.html <- paste0(render.html, '<br>')
     render.html <- paste0(render.html, '<b>Nonce:</b>')
     render.html <- paste0(render.html, '<br>')
     render.html <- paste0(render.html,blockchain$chain[i]$block$nonce)
