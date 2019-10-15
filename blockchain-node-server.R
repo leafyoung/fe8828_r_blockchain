@@ -12,7 +12,7 @@ node_identifier = gsub('-','',UUIDgenerate())
 # Instantiate the Blockchain
 blockchain = Blockchain()
 # genesis block
-blockchain$nextBlock(previousHash=1, proof=100)
+blockchain$nextBlock(previousHash=1, nonce=100)
 
 #* @get /chain/show
 #* @html
@@ -59,17 +59,24 @@ function(req)
     render.html <- paste0(render.html, '<br>')
     render.html <- paste0(render.html, '<b>Transactions:</b>')
     render.html <- paste0(render.html, '<br>')
-    render.html <- paste0(render.html, blockchain$chain[i]$block$transactions)
+    if (length(blockchain$chain[i]$block$transactions) > 0 ) {
+      for (j in 1:length(blockchain$chain[i]$block$transactions)) {
+        render.html <- paste0(render.html, blockchain$chain[i]$block$transactions[[j]])
+        render.html <- paste0(render.html, '<br>')
+      }
+    }
     render.html <- paste0(render.html, '<br>')
-    render.html <- paste0(render.html, '<b>Proof:</b>')
+    render.html <- paste0(render.html, '<b>Nonce:</b>')
     render.html <- paste0(render.html, '<br>')
-    render.html <- paste0(render.html,blockchain$chain[i]$block$proof)
+    render.html <- paste0(render.html,blockchain$chain[i]$block$nonce)
     render.html <- paste0(render.html, '<br>')
     if (i > 1) {
       render.html <- paste0(render.html, "<b>Proof guess:</b>")
-      render.html <- paste0(render.html, blockchain$guessProof(blockchain$chain[i-1]$block$proof, blockchain$chain[i]$block$proof))
+      render.html <- paste0(render.html, '<br>')
+      render.html <- paste0(render.html, blockchain$guessProof(blockchain$chain[i-1]$block$nonce, blockchain$chain[i]$block$nonce))
       render.html <- paste0(render.html, '<br>')
     }
+    render.html <- paste0(render.html, '<hr>')
   }
   render.html <- paste0(render.html, '<br>')
   render.html <- paste0(render.html, '</div>')
@@ -81,8 +88,8 @@ function(req)
 #* @get /chain
 function(req)
 {
-  list('length'=length(blockchain$chain),
-       'chain'=blockchain$chain)
+  list('length'= length(blockchain$chain),
+       'chain' = blockchain$chain)
 }
 
 #* @serializer custom_json
@@ -114,26 +121,26 @@ function(req, sender, recipient, amount)
 #* @get /mine
 function(req)
 {
-  # We run the proof of work algorithm to get the next proof
+  # We run the proof of work algorithm to get the next nonce
   lastBlock <- blockchain$lastBlock()
-  lastProof <- lastBlock$block$proof
+  lastNonce <- lastBlock$block$nonce
   
-  proof <- blockchain$proofOfWork(lastProof)
+  nonce <- blockchain$proofOfWork(lastNonce)
   
-  # We must receive a reward for finding the proof.
+  # We must receive a reward for finding the Nonce.
   # The sender is "0" to signify that this node has mined a new coin.
   blockchain$addTransaction(sender="0", recipient = node_identifier, amount=1)
   
   # Forge the new block by adding it to the chain
-  previousHash = blockchain$hashBlock(lastBlock)
-  block = blockchain$nextBlock(proof, previousHash)
+  previousHash <- blockchain$hashBlock(lastBlock)
+  block <- blockchain$nextBlock(nonce, previousHash)
   list('message'='New block forged',
        'index'= block$block$index,
        'transactions'= block$block$transactions,
-       'proof'=block$block$proof,
+       'nonce'=block$block$nonce,
        'previousHash'=block$block$previousHash)
   
-  #  list('message'='New block forged', c('index'= block$block$index, 'transactions'= block$block$transactions, 'proof'=block$block$proof,'previousHash'=block$block$previousHash))
+  #  list('message'='New block forged', c('index'= block$block$index, 'transactions'= block$block$transactions, 'nonce'=block$block$nonce,'previousHash'=block$block$previousHash))
 }
 
 #* @serializer custom_json

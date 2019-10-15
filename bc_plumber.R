@@ -3,7 +3,7 @@
 # No
 
 # change to where this project file are
-setwd("E:/Dropbox/dev/2018-Blockchain/r2/")
+setwd("E:/dev/fe8828_r_blockchain")
 
 list.of.packages <- c("plumber","jsonlite")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]

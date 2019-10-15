@@ -13,7 +13,7 @@
 #     "recipient": "15148ee92cd4ee26eee6cd394edd964",
 #     "amount": 225
 #   }],
-#   "proof": 211,
+#   "nonce": 211,
 #   "previousHash": "afb49032c6c086445a1d420dbaf88e4925681dec0a5b660d528fe399e557bf68"
 # }
 
@@ -35,25 +35,25 @@ Blockchain <- function ()
 
   #' Create a new Block in the Blockchain
   #'
-  #' @param proof <int> The proof given by the Proof of Work algorithm
+  #' @param nonce <int> The nonce given by the Proof of Work algorithm
   #' @param previousHash <str> Hash of previous Block
-  #' @return new block generated given the \code{proof} and the \code{previousHash}
+  #' @return new block generated given the \code{nonce} and the \code{previousHash}
   #' @examples  
   #' blockchain = Blockchain()
-  #' blockchain$nextBlock(previousHash=1, proof=100) # genesis block
+  #' blockchain$nextBlock(previousHash=1, nonce=100) # genesis block
 
-  bc$nextBlock = function (proof, previousHash=NULL){
+  bc$nextBlock = function (nonce, previousHash=NULL){
     previousHash <- ifelse (is.null(previousHash),
                             bc$hashBlock(bc$chain[length(bc$chain)]),
                             previousHash)
     
-    block = list('block' = list('index' = length (bc$chain) + 1,
+    block <- list('block' = list('index' = length (bc$chain) + 1,
                  'timestamp' = as.numeric(Sys.time()),
                  'transactions' =  bc$currentTransactions,
-                 'proof' = proof,
+                 'nonce' = nonce,
                  'previousHash' = previousHash))
     
-    bc$currentTransactions = NULL
+    bc$currentTransactions <- NULL
     bc$chain <- append(bc$chain, block)
     return (block)
   }
@@ -72,7 +72,7 @@ Blockchain <- function ()
   #' @param recipient <str> address of the recipient
   #' @param amount <int> transaction amount
   #' @return  <int> Index of the Block that will hold this transaction
-  bc$addTransaction = function (sender, recipient, amount) 
+  bc$addTransaction <- function (sender, recipient, amount) 
   {
     txn <-  list('transaction'= list('sender'=sender,'recipient'=recipient,'amount'=amount))
     bc$currentTransactions <- append(bc$currentTransactions, txn)
@@ -85,38 +85,38 @@ Blockchain <- function ()
   #' @param block <block> 
   #' @return  <str> SHA256 hashed value for \code(block)
   #' @examples  
-  bc$hashBlock = function (block) {
+  bc$hashBlock <- function (block) {
     require(digest)
     digest(block, algo="sha256")
   }
   
   #' Find a number p' such that hash(pp') that ends with two zeroes, where p is the previous p'
-  #' p is the previous proof and p' is the new proof
-  #' @param last_proof <block> 
+  #' p is the previous nonce and p' is the new nonce
+  #' @param last_nonce <block> 
   #' @return  <str> SHA256 hashed value for \code(block)
-  bc$proofOfWork <- function (last_proof)
+  bc$proofOfWork <- function (last_nonce)
   {
-    proof <- 0
-    while (!bc$validProof(last_proof, proof)) {
-      proof <- proof + 1
+    nonce <- 0
+    while (!bc$validNonce(last_nonce, nonce)) {
+      nonce <- nonce + 1
     }
-    return(proof)
+    return(nonce)
   }
 
   #' Find a number p' such that hash(pp') ends with two zeroes, where p is the previous p'
-  #' p is the previous proof and p' is the new proof
-  #' @param last_proof <int> previous proof 
-  #' @param proof <int> proof
-  #' @return  <bool> TRUE if correct, FALSE if not
-  bc$guessProof <- function(last_proof, proof){
-    guess <- paste0(last_proof, proof)
+  #' p is the previous nonce and p' is the new nonce
+  #' @param last_nonce <int> previous nonce
+  #' @param nonce <int> nonce
+  #' @return <bool> TRUE if correct, FALSE if not
+  bc$guessProof <- function(last_nonce, nonce){
+    guess <- paste0(last_nonce, nonce)
     guess_hash <- digest(guess, algo = 'sha256')
     guess_hash
   }
   
-  bc$validProof <- function (last_proof, proof) 
+  bc$validNonce <- function (last_nonce, nonce) 
   {
-    guess_hash <- bc$guessProof(last_proof, proof)
+    guess_hash <- bc$guessProof(last_nonce, nonce)
     return (gsub('.*(.{2}$)', '\\1',guess_hash) == "00")
   }
 
@@ -134,9 +134,8 @@ Blockchain <- function ()
       if (block$block$previousHash != bc$hashBlock(lastBlock)) {
         return(FALSE)
       }
-      # checking for proof validity
-      if(!bc$validProof(lastBlock$block$proof, block$block$proof))
-      {
+      # checking for nonce validity
+      if(!bc$validNonce(lastBlock$block$nonce, block$block$nonce)) {
         return(FALSE)
       }
       lastBlock <- block
@@ -174,7 +173,7 @@ Blockchain <- function ()
   {
     neighbours <- bc$nodes 
     new_chain <- NULL
-    max_length = length(bc$chain)
+    max_length <- length(bc$chain)
     for (i in 1:length(neighbours))
     {
       chain.node <- GET(paste0(neighbours[i],'/chain'))
