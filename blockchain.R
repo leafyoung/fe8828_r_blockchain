@@ -93,7 +93,7 @@ Blockchain <- function ()
   #' Find a number p' such that hash(pp') that ends with two zeroes, where p is the previous p'
   #' p is the previous nonce and p' is the new nonce
   #' @param last_nonce <block> 
-  #' @return  <str> SHA256 hashed value for \code(block)
+  #' @return <str> SHA256 hashed value for \code(block)
   bc$proofOfWork <- function (last_nonce)
   {
     nonce <- 0

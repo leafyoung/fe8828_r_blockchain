@@ -3,7 +3,7 @@
 # No
 
 # change to where this project file are
-setwd("E:/dev/fe8828_r_blockchain")
+setwd("~/fe8828_r_blockchain")
 
 list.of.packages <- c("plumber","jsonlite")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
@@ -31,6 +31,6 @@ addSerializer("custom_json",custom_json)
 
 # Make sure you put the path to your blockchain-node-server.R script
 r <- plumb("blockchain-node-server.R")
-r$run(port=8000)
+r$run(host = "0.0.0.0", port=8000)
 
 # http://127.0.0.1:8000/__swagger__/
